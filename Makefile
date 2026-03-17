@@ -1,6 +1,8 @@
 GO ?= go
 GOLANGCI_LINT ?= golangci-lint
-CUSTOM_GCLINT_CONFIG ?= ./.custom-gcl.yml
+CUSTOM_GCLINT_CONFIG ?= ./.custom-gclint.yml
+# golangci-lint custom only auto-loads .custom-gcl.yml.
+CUSTOM_GCLINT_COMPAT_CONFIG ?= ./.custom-gcl.yml
 GOLANGCI_LINT_VERSION ?= $(shell sed -n 's/^version:[[:space:]]*//p' $(CUSTOM_GCLINT_CONFIG) | head -n 1)
 CUSTOM_GCLINT ?= ./.bin/gclint
 RELEASE_DIR ?= ./.release
@@ -22,6 +24,11 @@ verify-config:
 	$(GOLANGCI_LINT) config verify -c .golangci.yml
 
 build-lint:
+	@set -eu; \
+	source_config="$(CUSTOM_GCLINT_CONFIG)"; \
+	compat_config="$(CUSTOM_GCLINT_COMPAT_CONFIG)"; \
+	trap 'rm -f "$$compat_config"' EXIT; \
+	cp "$$source_config" "$$compat_config"; \
 	$(GOLANGCI_LINT) custom
 
 lint: verify-config build-lint
@@ -31,6 +38,10 @@ ci: test lint
 
 package-release: verify-config
 	@set -eu; \
+	source_config="$(CUSTOM_GCLINT_CONFIG)"; \
+	compat_config="$(CUSTOM_GCLINT_COMPAT_CONFIG)"; \
+	trap 'rm -f "$$compat_config"' EXIT; \
+	cp "$$source_config" "$$compat_config"; \
 	release_root="$$(mkdir -p "$(RELEASE_DIR)" && cd "$(RELEASE_DIR)" && pwd)"; \
 	asset_arch="$(TARGET_ARCH)"; \
 	goarm="$(TARGET_GOARM)"; \

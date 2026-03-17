@@ -12,7 +12,7 @@ The repository currently contains one module plugin package: `style`.
 
 Releases use the version format `YYYY.MM.DD-SHORT_HASH_ID`, for example `2026.03.17-deadbee`.
 
-The release workflow derives its build matrix from the official `golangci-lint` release assets for the pinned version in `.custom-gcl.yml`.
+The release workflow derives its build matrix from the official `golangci-lint` release assets for the pinned version in `.custom-gclint.yml`.
 
 ### Install the latest release with `install.sh`
 
@@ -72,7 +72,7 @@ make ci
 make clean
 ```
 
-`make lint` builds `.bin/gclint` from `.custom-gcl.yml` and runs it against the repository.
+`make lint` builds `.bin/gclint` from `.custom-gclint.yml` and runs it against the repository.
 
 ## Current Rules
 

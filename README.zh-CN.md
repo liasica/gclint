@@ -12,7 +12,7 @@
 
 发布版本号格式为 `YYYY.MM.DD-SHORT_HASH_ID`，例如 `2026.03.17-deadbee`。
 
-发布工作流会基于 `.custom-gcl.yml` 中固定版本对应的官方 `golangci-lint` release 资产，动态生成构建平台矩阵。
+发布工作流会基于 `.custom-gclint.yml` 中固定版本对应的官方 `golangci-lint` release 资产，动态生成构建平台矩阵。
 
 ### 通过 `install.sh` 安装最新版本
 
@@ -72,7 +72,7 @@ make ci
 make clean
 ```
 
-`make lint` 会根据 `.custom-gcl.yml` 构建 `.bin/gclint`，然后扫描当前仓库。
+`make lint` 会根据 `.custom-gclint.yml` 构建 `.bin/gclint`，然后扫描当前仓库。
 
 ## 当前规则
 
