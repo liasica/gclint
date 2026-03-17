@@ -126,6 +126,7 @@ jobs:
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           release_notes_file="$(mktemp)"
@@ -137,11 +138,12 @@ jobs:
             echo "Commit: ${GITHUB_SHA}"
           } > "${release_notes_file}"
 
-          if gh release view "${RELEASE_VERSION}" >/dev/null 2>&1; then
-            gh release upload "${RELEASE_VERSION}" ./.release/gcl_* ./.release/checksums.txt --clobber
-            gh release edit "${RELEASE_VERSION}" --title "${RELEASE_VERSION}" --notes-file "${release_notes_file}"
+          if gh release view "${RELEASE_VERSION}" --repo "${GH_REPO}" >/dev/null 2>&1; then
+            gh release upload "${RELEASE_VERSION}" ./.release/gcl_* ./.release/checksums.txt --repo "${GH_REPO}" --clobber
+            gh release edit "${RELEASE_VERSION}" --repo "${GH_REPO}" --title "${RELEASE_VERSION}" --notes-file "${release_notes_file}"
           else
             gh release create "${RELEASE_VERSION}" ./.release/gcl_* ./.release/checksums.txt \
+              --repo "${GH_REPO}" \
               --title "${RELEASE_VERSION}" \
               --notes-file "${release_notes_file}" \
               --target "${GITHUB_SHA}"
