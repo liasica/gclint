@@ -102,8 +102,8 @@ func recordDeclarationSemantics(
 	}
 
 	for _, declarationSpecification := range generalDeclaration.Specs {
-		valueSpecification, ok := declarationSpecification.(*ast.ValueSpec)
-		if !ok {
+		valueSpecification, isValueSpecification := declarationSpecification.(*ast.ValueSpec)
+		if !isValueSpecification {
 			continue
 		}
 

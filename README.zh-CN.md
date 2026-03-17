@@ -79,8 +79,7 @@ make clean
 
 自定义 analyzer：
 
-- `errshort`：禁止在同一作用域里已声明 `err` 后，再用 `:=` 复用旧 `err`
-- `redeclare`：禁止在同一作用域里通过短变量声明复用已存在的非 `err` 变量
+- `redeclare`：禁止在当前函数内通过短变量声明复用已存在的变量名，包括内层 block shadowing 和 `err`
 - `namedreturn`：命名返回值已经赋值后，禁止再显式返回具体值
 - `chinesekey`：禁止中文 `json` tag key、固化 map key，以及原始 JSON 字符串中的中文 key
 - `layerdep`：禁止低层包导入已配置的高层包
@@ -142,6 +141,6 @@ linters:
 - `chinesekey` 当前检查显式 `json` struct tag、string-keyed map literal、string-keyed map 下标赋值，以及原始 JSON 字符串常量
 - `layerdep` 只校验 `settings.dependency_rules` 里列出的包前缀
 - `namedreturn` 采用严格模式：命名返回值一旦赋值，后续显式 `return ...` 都会报错
-- `redeclare` 会跳过 `err`，因为 `errshort` 负责给出更精确的诊断
+- `redeclare` 同时覆盖同 block 复用和内层 block shadowing，例如函数内的 `if err := ...`
 - `varreuse` 是刻意保持保守的启发式规则，重点看描述性变量名和赋值来源里的稳定语义 token
 - 业务语义命名、单复数准确性、注释质量这类规则仍然需要人工 code review 参与判断

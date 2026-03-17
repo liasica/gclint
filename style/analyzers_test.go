@@ -6,12 +6,6 @@ import (
 	"golang.org/x/tools/go/analysis/analysistest"
 )
 
-func TestErrShortDeclarationAnalyzer(t *testing.T) {
-	testDataDirectory := analysistest.TestData()
-
-	analysistest.Run(t, testDataDirectory, newErrShortDeclarationAnalyzer(), "errshortdecl")
-}
-
 func TestNamedReturnExplicitValueAnalyzer(t *testing.T) {
 	testDataDirectory := analysistest.TestData()
 

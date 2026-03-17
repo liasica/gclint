@@ -23,6 +23,11 @@ func badRedeclare() error {
 		return nil
 	}
 
+	thirdValue, err := readSecondValue() // want "existing variable \"err\" must not be reused in short variable declaration"
+	if thirdValue == "" {
+		return nil
+	}
+
 	_, err = readSecondValue()
 	if err != nil {
 		return err
@@ -47,18 +52,67 @@ func goodRedeclare() error {
 	return nil
 }
 
-func innerScopeShadowingIsAllowed() error {
+func innerScopeShadowingIsForbidden() error {
 	firstValue, err := readFirstValue()
 	if err != nil {
 		return err
 	}
 
 	if firstValue != "" {
-		firstValue, secondValue := readPair()
+		firstValue, secondValue := readPair() // want "existing variable \"firstValue\" must not be reused in short variable declaration"
 		if firstValue == "" || secondValue == "" {
 			return nil
 		}
 	}
 
 	return nil
+}
+
+func failValidation() error {
+	return nil
+}
+
+func innerScopeErrShadowingIsForbidden() error {
+	firstValue, err := readFirstValue()
+	if err != nil {
+		return err
+	}
+
+	if err := failValidation(); err != nil { // want "existing variable \"err\" must not be reused in short variable declaration"
+		return err
+	}
+
+	_ = firstValue
+
+	return nil
+}
+
+func rangeShadowingIsForbidden(values []string) []string {
+	firstValue := "seed"
+
+	for _, firstValue := range values { // want "existing variable \"firstValue\" must not be reused in short variable declaration"
+		if firstValue == "" {
+			continue
+		}
+	}
+
+	_ = firstValue
+
+	return values
+}
+
+func nestedFunctionShadowingIsAllowed(values []string) []string {
+	firstValue := "seed"
+
+	go func() {
+		for _, firstValue := range values {
+			if firstValue == "" {
+				return
+			}
+		}
+	}()
+
+	_ = firstValue
+
+	return values
 }

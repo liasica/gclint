@@ -26,7 +26,6 @@ func newPlugin(rawSettings any) (register.LinterPlugin, error) {
 
 func (pluginInstance plugin) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 	return []*analysis.Analyzer{
-		newErrShortDeclarationAnalyzer(),
 		newRedeclareAnalyzer(),
 		newNamedReturnExplicitValueAnalyzer(),
 		newJSONMapKeyAnalyzer(),

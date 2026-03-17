@@ -312,7 +312,7 @@ func relatedVariableObjectsFromExpression(pass *analysis.Pass, expression ast.Ex
 			return true
 		}
 
-		if _, ok := identifierObject.(*types.Var); !ok {
+		if _, isVariableObject := identifierObject.(*types.Var); !isVariableObject {
 			return true
 		}
 

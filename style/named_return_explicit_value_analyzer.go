@@ -115,8 +115,8 @@ func collectAssignedNamedReturnPositions(
 		}
 
 		for _, leftHandSideExpression := range assignStatement.Lhs {
-			identifier, ok := leftHandSideExpression.(*ast.Ident)
-			if !ok {
+			identifier, isIdentifier := leftHandSideExpression.(*ast.Ident)
+			if !isIdentifier {
 				continue
 			}
 

@@ -79,8 +79,7 @@ make clean
 
 Custom analyzers:
 
-- `errshort`: forbids `:=` from reusing an existing `err` in the same scope
-- `redeclare`: forbids same-scope short declarations from reusing existing non-`err` variables
+- `redeclare`: forbids short declarations from reusing an existing variable name in the current function, including inner-block shadowing and `err`
 - `namedreturn`: forbids explicit returns after named return values have already been assigned
 - `chinesekey`: forbids Chinese JSON tag keys, Chinese string keys in persistent maps, and Chinese keys inside raw JSON string constants
 - `layerdep`: forbids lower-level packages from importing configured higher-level packages
@@ -142,6 +141,6 @@ The checklist below maps the current repository status to the Go style document 
 - `chinesekey` checks explicit `json` struct tags, string-keyed map literals, string-keyed map index assignments, and raw JSON string constants
 - `layerdep` only enforces the package prefixes listed in `settings.dependency_rules`
 - `namedreturn` is intentionally strict: once a named return value has been assigned, later explicit returns are rejected
-- `redeclare` skips `err` because `errshort` owns the more specific diagnostic for that case
+- `redeclare` covers same-block reuse and inner-block shadowing such as `if err := ...` inside the same function
 - `varreuse` is intentionally heuristic and focuses on descriptive variable names plus stable semantic tokens from assignment sources
 - Business-semantic naming, singular/plural correctness, and comment quality still require code review judgment

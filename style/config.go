@@ -31,20 +31,20 @@ func decodePluginSettings(rawSettings any) (pluginSettings, error) {
 
 	rawConfig, rawConfigError := register.DecodeSettings[rawPluginConfig](rawSettings)
 	if rawConfigError == nil {
-		settings := rawConfig.Settings
-		if len(settings.DependencyRules) == 0 {
-			settings.DependencyRules = rawConfig.DependencyRules
+		decodedSettings := rawConfig.Settings
+		if len(decodedSettings.DependencyRules) == 0 {
+			decodedSettings.DependencyRules = rawConfig.DependencyRules
 		}
 
-		return normalizePluginSettings(settings), nil
+		return normalizePluginSettings(decodedSettings), nil
 	}
 
-	settings, settingsError := register.DecodeSettings[pluginSettings](rawSettings)
+	decodedSettings, settingsError := register.DecodeSettings[pluginSettings](rawSettings)
 	if settingsError != nil {
 		return pluginSettings{}, rawConfigError
 	}
 
-	return normalizePluginSettings(settings), nil
+	return normalizePluginSettings(decodedSettings), nil
 }
 
 func normalizePluginSettings(settings pluginSettings) pluginSettings {
