@@ -1,0 +1,8 @@
+version: v2.11.3
+name: gcl
+destination: ./.bin
+
+plugins:
+  - module: github.com/liasica/gcl
+    import: github.com/liasica/gcl/style
+    path: .

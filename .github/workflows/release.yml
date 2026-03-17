@@ -1,0 +1,147 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      matrix: ${{ steps.platforms.outputs.matrix }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6.0.2
+
+      - name: Compute release version
+        id: version
+        run: |
+          release_version="$(date -u +'%Y.%m.%d')-$(git rev-parse --short=7 HEAD)"
+          echo "version=${release_version}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve official platform matrix
+        id: platforms
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          golangci_lint_version="$(make -s print-golangci-lint-version)"
+          golangci_lint_asset_version="${golangci_lint_version#v}"
+          release_json="$(gh api "repos/golangci/golangci-lint/releases/tags/${golangci_lint_version}")"
+
+          matrix_json="$(
+            printf '%s' "${release_json}" | jq -c --arg version "${golangci_lint_asset_version}" '
+              {
+                include: [
+                  .assets[]
+                  | .name
+                  | select(test("^golangci-lint-\($version)-"))
+                  | select((endswith(".tar.gz") or endswith(".zip")) and (contains("-source.") | not))
+                  | capture("^golangci-lint-\($version)-(?<goos>[^-]+)-(?<asset_arch>[^.]+)\\.(?<archive_format>tar\\.gz|zip)$")
+                  | .goarch = (if (.asset_arch | startswith("armv")) then "arm" else .asset_arch end)
+                  | .goarm = (if (.asset_arch | startswith("armv")) then (.asset_arch | ltrimstr("armv")) else "" end)
+                ]
+              }
+            '
+          )"
+
+          if [ "$(printf '%s' "${matrix_json}" | jq '.include | length')" -eq 0 ]; then
+            echo "resolved empty platform matrix" >&2
+            exit 1
+          fi
+
+          echo "matrix=${matrix_json}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: prepare
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6.0.2
+
+      - name: Set up Go
+        uses: actions/setup-go@v6.3.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install golangci-lint
+        run: make install-lint
+
+      - name: Add Go bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Build release asset
+        env:
+          RELEASE_DIR: ./.release
+          TARGET_OS: ${{ matrix.goos }}
+          TARGET_ARCH: ${{ matrix.goarch }}
+          TARGET_GOARM: ${{ matrix.goarm }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: make package-release
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v7.0.0
+        with:
+          name: release-${{ matrix.goos }}-${{ matrix.asset_arch }}
+          path: ./.release/gcl_*
+          if-no-files-found: error
+
+  publish:
+    needs:
+      - prepare
+      - build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v8.0.1
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: ./.release
+
+      - name: Generate checksums
+        run: |
+          cd ./.release
+          sha256sum gcl_* > checksums.txt
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          release_notes_file="$(mktemp)"
+          {
+            echo "Release ${RELEASE_VERSION}"
+            echo
+            echo "Version format: YYYY.MM.DD-SHORT_HASH_ID"
+            echo
+            echo "Commit: ${GITHUB_SHA}"
+          } > "${release_notes_file}"
+
+          if gh release view "${RELEASE_VERSION}" >/dev/null 2>&1; then
+            gh release upload "${RELEASE_VERSION}" ./.release/gcl_* ./.release/checksums.txt --clobber
+            gh release edit "${RELEASE_VERSION}" --title "${RELEASE_VERSION}" --notes-file "${release_notes_file}"
+          else
+            gh release create "${RELEASE_VERSION}" ./.release/gcl_* ./.release/checksums.txt \
+              --title "${RELEASE_VERSION}" \
+              --notes-file "${release_notes_file}" \
+              --target "${GITHUB_SHA}"
+          fi

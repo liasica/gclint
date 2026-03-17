@@ -1,0 +1,22 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - revive
+    - staticcheck
+    - style
+  settings:
+    custom:
+      style:
+        type: module
+        description: Enforce custom Go style rules with style.
+        settings:
+          dependency_rules:
+            - source: github.com/example/project/internal/repository
+              forbidden:
+                - github.com/example/project/internal/service
+                - github.com/example/project/internal/handler
