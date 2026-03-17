@@ -9,8 +9,9 @@ import (
 )
 
 type semanticVariableState struct {
-	baselineTokens []string
-	variableName   string
+	baselineTokens       []string
+	relatedSourceObjects map[types.Object]struct{}
+	variableName         string
 }
 
 func newSemanticVariableReuseAnalyzer() *analysis.Analyzer {
@@ -155,10 +156,15 @@ func recordSemanticAssignment(
 		}
 
 		semanticStateByObject[variableObject] = semanticVariableState{
-			baselineTokens: baselineTokens,
-			variableName:   variableName,
+			baselineTokens:       baselineTokens,
+			relatedSourceObjects: relatedVariableObjectsFromExpression(pass, sourceExpression),
+			variableName:         variableName,
 		}
 
+		return
+	}
+
+	if sourceExpressionUsesOnlyRelatedVariables(pass, sourceExpression, currentState.relatedSourceObjects) {
 		return
 	}
 

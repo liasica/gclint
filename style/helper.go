@@ -290,3 +290,59 @@ func formatTokens(tokens []string) string {
 
 	return "[" + strings.Join(sortedTokens, ", ") + "]"
 }
+
+func relatedVariableObjectsFromExpression(pass *analysis.Pass, expression ast.Expr) map[types.Object]struct{} {
+	if expression == nil {
+		return nil
+	}
+
+	relatedObjects := make(map[types.Object]struct{})
+
+	ast.Inspect(expression, func(node ast.Node) bool {
+		identifier, ok := node.(*ast.Ident)
+		if !ok || identifier.Name == "_" {
+			return true
+		}
+
+		identifierObject := objectOfIdentifier(pass, identifier)
+		if identifierObject == nil {
+			return true
+		}
+
+		if _, ok := identifierObject.(*types.Var); !ok {
+			return true
+		}
+
+		relatedObjects[identifierObject] = struct{}{}
+		return true
+	})
+
+	if len(relatedObjects) == 0 {
+		return nil
+	}
+
+	return relatedObjects
+}
+
+func sourceExpressionUsesOnlyRelatedVariables(
+	pass *analysis.Pass,
+	expression ast.Expr,
+	relatedObjects map[types.Object]struct{},
+) bool {
+	if len(relatedObjects) == 0 {
+		return false
+	}
+
+	sourceObjects := relatedVariableObjectsFromExpression(pass, expression)
+	if len(sourceObjects) == 0 {
+		return false
+	}
+
+	for sourceObject := range sourceObjects {
+		if _, ok := relatedObjects[sourceObject]; !ok {
+			return false
+		}
+	}
+
+	return true
+}
