@@ -25,14 +25,14 @@ func newSemanticVariableReuseAnalyzer() *analysis.Analyzer {
 func runSemanticVariableReuseAnalyzer(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
 		ast.Inspect(file, func(node ast.Node) bool {
-			functionDeclaration, ok := node.(*ast.FuncDecl)
-			if ok {
+			functionDeclaration, isFunctionDeclaration := node.(*ast.FuncDecl)
+			if isFunctionDeclaration {
 				checkSemanticVariableReuse(pass, functionDeclaration.Body)
 				return false
 			}
 
-			functionLiteral, ok := node.(*ast.FuncLit)
-			if ok {
+			functionLiteral, isFunctionLiteral := node.(*ast.FuncLit)
+			if isFunctionLiteral {
 				checkSemanticVariableReuse(pass, functionLiteral.Body)
 				return false
 			}
@@ -52,11 +52,11 @@ func checkSemanticVariableReuse(pass *analysis.Pass, functionBody *ast.BlockStmt
 	semanticStateByObject := make(map[types.Object]semanticVariableState)
 
 	inspectWithoutNestedFunctions(functionBody, func(node ast.Node) bool {
-		switch currentNode := node.(type) {
+		switch currentSyntaxNode := node.(type) {
 		case *ast.AssignStmt:
-			recordAssignStatementSemantics(pass, semanticStateByObject, currentNode)
+			recordAssignStatementSemantics(pass, semanticStateByObject, currentSyntaxNode)
 		case *ast.DeclStmt:
-			recordDeclarationSemantics(pass, semanticStateByObject, currentNode)
+			recordDeclarationSemantics(pass, semanticStateByObject, currentSyntaxNode)
 		}
 
 		return true

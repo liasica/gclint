@@ -1,4 +1,5 @@
 GO ?= go
+GOFMT ?= gofmt
 GOLANGCI_LINT ?= golangci-lint
 CUSTOM_GCLINT_CONFIG ?= ./.custom-gclint.yml
 # golangci-lint custom only auto-loads .custom-gcl.yml.
@@ -11,11 +12,19 @@ TARGET_ARCH ?= $(shell $(GO) env GOARCH)
 TARGET_GOARM ?=
 TARGET_GOMIPS ?= hardfloat
 VERSION ?= dev
+GO_SOURCE_FILES ?= $(shell git ls-files '*.go')
 
-.PHONY: install-lint test verify-config build-lint lint ci package-release clean print-golangci-lint-version
+.PHONY: install-lint format-check test verify-config build-lint lint ci package-release clean print-golangci-lint-version
 
 install-lint:
 	$(GO) install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+
+format-check:
+	@unformatted_files="$$( $(GOFMT) -l $(GO_SOURCE_FILES) )"; \
+	if [ -n "$$unformatted_files" ]; then \
+		printf '%s\n' "$$unformatted_files"; \
+		exit 1; \
+	fi
 
 test:
 	$(GO) test ./...
@@ -34,7 +43,7 @@ build-lint:
 lint: verify-config build-lint
 	$(CUSTOM_GCLINT) run ./...
 
-ci: test lint
+ci: format-check test lint
 
 package-release: verify-config
 	@set -eu; \

@@ -18,6 +18,12 @@ func TestNamedReturnExplicitValueAnalyzer(t *testing.T) {
 	analysistest.Run(t, testDataDirectory, newNamedReturnExplicitValueAnalyzer(), "namedreturn")
 }
 
+func TestRedeclareAnalyzer(t *testing.T) {
+	testDataDirectory := analysistest.TestData()
+
+	analysistest.Run(t, testDataDirectory, newRedeclareAnalyzer(), "redeclare")
+}
+
 func TestJSONMapKeyAnalyzer(t *testing.T) {
 	testDataDirectory := analysistest.TestData()
 

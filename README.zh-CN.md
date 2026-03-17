@@ -66,21 +66,34 @@ install -m 0755 ./.bin/gclint /usr/local/bin/gclint
 
 ```bash
 make install-lint
+make format-check
 make test
 make lint
 make ci
 make clean
 ```
 
-`make lint` 会根据 `.custom-gclint.yml` 构建 `.bin/gclint`，然后扫描当前仓库。
+`make format-check` 会校验 `gofmt`，`make lint` 会根据 `.custom-gclint.yml` 构建 `.bin/gclint`，然后扫描当前仓库。
 
 ## 当前规则
 
+自定义 analyzer：
+
 - `errshort`：禁止在同一作用域里已声明 `err` 后，再用 `:=` 复用旧 `err`
-- `namedreturn`：命名返回值已经赋值后，禁止显式镜像返回
-- `chinesekey`：禁止中文 `json` tag key，以及 map literal 中的中文字符串 key
+- `redeclare`：禁止在同一作用域里通过短变量声明复用已存在的非 `err` 变量
+- `namedreturn`：命名返回值已经赋值后，禁止再显式返回具体值
+- `chinesekey`：禁止中文 `json` tag key、固化 map key，以及原始 JSON 字符串中的中文 key
 - `layerdep`：禁止低层包导入已配置的高层包
 - `varreuse`：用启发式方式检查“语义明确的变量被复用为其他业务对象容器”
+
+默认启用的官方 linter：
+
+- `dupl`：检查大段重复代码
+- `dupword`：检查代码和注释中的重复单词
+- `godot`：统一注释句末标点
+- `misspell`：检查常见英文拼写错误
+- `whitespace`：禁止 block 首尾无意义空行
+- `wsl_v5`：约束逻辑块之间的空行结构
 
 ## 分层依赖配置
 
@@ -94,7 +107,7 @@ linters:
     custom:
       style:
         type: module
-        description: Enforce custom Go style rules with style.
+        description: Enforce custom Go style rules with the gclint style plugin.
         settings:
           dependency_rules:
             - source: github.com/example/project/internal/repository
@@ -112,18 +125,23 @@ linters:
 - [ ] 命名必须贴合真实业务语义，不得随意缩写
 - [ ] 单数和复数语义必须准确
 - [ ] 不同业务对象不能复用同一个名字
-- [ ] 禁止无意义空格、空行和脏格式
+- [x] 同一作用域里的短变量声明不能复用已有变量
+- [x] 禁止无意义空格、空行和脏格式，当前由 `gofmt`、`whitespace`、`wsl_v5` 共同约束
 - [ ] 不同逻辑块必须清晰分隔，必要时要有说明性注释
 - [ ] 注释必须清晰、有逻辑，必要注释默认使用英文
 - [x] 同一作用域中已声明 `err` 后，禁止 `:=` 再带上旧 `err`
 - [x] 已有明确业务含义的变量，禁止复用为其他业务对象的容器
-- [ ] 禁止大范围重复代码
+- [x] 禁止大范围重复代码，当前由 `dupl` 检查
 - [x] 低层包禁止依赖高层包，当前通过 `settings.dependency_rules` 配置生效
-- [x] JSON key 与固化 map key 禁止使用中文
-- [x] 命名返回值赋值后，禁止显式返回镜像结果，必须直接 `return`
+- [x] JSON key、固化 map key、原始 JSON 字符串 key 禁止使用中文
+- [x] 命名返回值赋值后，禁止显式返回具体值，必须直接 `return`
 
 ## 当前实现边界
 
-- `chinesekey` 当前只检查显式 `json` struct tag 和 map literal 里的显式字符串 key
+- 仓库在 `style/testdata/src` 下提供了 analyzer 夹具，直接对应规范里的推荐/不推荐写法
+- `chinesekey` 当前检查显式 `json` struct tag、string-keyed map literal、string-keyed map 下标赋值，以及原始 JSON 字符串常量
 - `layerdep` 只校验 `settings.dependency_rules` 里列出的包前缀
+- `namedreturn` 采用严格模式：命名返回值一旦赋值，后续显式 `return ...` 都会报错
+- `redeclare` 会跳过 `err`，因为 `errshort` 负责给出更精确的诊断
 - `varreuse` 是刻意保持保守的启发式规则，重点看描述性变量名和赋值来源里的稳定语义 token
+- 业务语义命名、单复数准确性、注释质量这类规则仍然需要人工 code review 参与判断

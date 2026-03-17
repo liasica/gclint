@@ -155,6 +155,7 @@ func semanticTokensFromExpression(expression ast.Expr) []string {
 	case *ast.SelectorExpr:
 		selectorTokens := semanticTokensFromExpression(currentExpression.X)
 		selectorTokens = append(selectorTokens, semanticTokensFromName(currentExpression.Sel.Name)...)
+
 		return uniqueTokens(selectorTokens)
 	case *ast.Ident:
 		return semanticTokensFromName(currentExpression.Name)
@@ -202,6 +203,7 @@ func splitIdentifierTokens(name string) []string {
 			}
 
 			previousRuneWasLower = false
+
 			continue
 		}
 
@@ -252,6 +254,7 @@ func intersectTokens(leftTokens []string, rightTokens []string) []string {
 	}
 
 	intersection := make([]string, 0)
+
 	for _, leftToken := range leftTokens {
 		if _, ok := rightTokenSet[leftToken]; ok {
 			intersection = append(intersection, leftToken)
@@ -314,6 +317,7 @@ func relatedVariableObjectsFromExpression(pass *analysis.Pass, expression ast.Ex
 		}
 
 		relatedObjects[identifierObject] = struct{}{}
+
 		return true
 	})
 

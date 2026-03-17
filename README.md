@@ -66,21 +66,34 @@ install -m 0755 ./.bin/gclint /usr/local/bin/gclint
 
 ```bash
 make install-lint
+make format-check
 make test
 make lint
 make ci
 make clean
 ```
 
-`make lint` builds `.bin/gclint` from `.custom-gclint.yml` and runs it against the repository.
+`make format-check` validates `gofmt`. `make lint` builds `.bin/gclint` from `.custom-gclint.yml` and runs it against the repository.
 
 ## Current Rules
 
+Custom analyzers:
+
 - `errshort`: forbids `:=` from reusing an existing `err` in the same scope
-- `namedreturn`: forbids explicit mirror returns after named return values have already been assigned
-- `chinesekey`: forbids Chinese JSON tag keys and Chinese string keys in map literals
+- `redeclare`: forbids same-scope short declarations from reusing existing non-`err` variables
+- `namedreturn`: forbids explicit returns after named return values have already been assigned
+- `chinesekey`: forbids Chinese JSON tag keys, Chinese string keys in persistent maps, and Chinese keys inside raw JSON string constants
 - `layerdep`: forbids lower-level packages from importing configured higher-level packages
 - `varreuse`: heuristically forbids reusing a semantic variable as a container for a different business object
+
+Official linters enabled by default:
+
+- `dupl`: detects large duplicated code fragments
+- `dupword`: detects duplicated words in code and comments
+- `godot`: normalizes sentence-ending punctuation in comments
+- `misspell`: detects common English misspellings
+- `whitespace`: forbids meaningless leading or trailing blank lines in blocks
+- `wsl_v5`: enforces empty-line structure between logical blocks
 
 ## Layer Dependency Configuration
 
@@ -94,7 +107,7 @@ linters:
     custom:
       style:
         type: module
-        description: Enforce custom Go style rules with style.
+        description: Enforce custom Go style rules with the gclint style plugin.
         settings:
           dependency_rules:
             - source: github.com/example/project/internal/repository
@@ -112,18 +125,23 @@ The checklist below maps the current repository status to the Go style document 
 - [ ] Names must match real business semantics and avoid arbitrary abbreviations
 - [ ] Singular and plural naming must stay accurate
 - [ ] Different business objects must not share the same name
-- [ ] Meaningless spaces, blank lines, and dirty formatting are forbidden
+- [x] Same-scope short declarations must not reuse an existing variable
+- [x] Meaningless spaces, blank lines, and dirty formatting are checked with `gofmt`, `whitespace`, and `wsl_v5`
 - [ ] Different logic blocks must be clearly separated and documented when needed
 - [ ] Comments must stay clear, logical, and use English when needed
 - [x] Once `err` already exists in the same scope, short declarations must not reuse it
 - [x] Reusing a semantic variable for another business object is checked with a heuristic semantic-token analyzer
-- [ ] Large duplicated code blocks should be removed
+- [x] Large duplicated code blocks are checked with `dupl`
 - [x] Low-level packages must not import higher-level packages when configured through `settings.dependency_rules`
-- [x] Chinese JSON tag keys and Chinese string keys in map literals are forbidden
-- [x] After named returns are assigned, explicit mirror returns are forbidden and bare `return` must be used
+- [x] Chinese JSON tag keys, persistent map keys, and raw JSON string keys are forbidden
+- [x] After named returns are assigned, explicit returns are forbidden and bare `return` must be used
 
 ## Current Scope
 
-- `chinesekey` currently checks explicit `json` struct tags and explicit string keys in map literals
+- The repository includes analyzer fixtures under `style/testdata/src`, built from recommended and discouraged examples in the Go style document.
+- `chinesekey` checks explicit `json` struct tags, string-keyed map literals, string-keyed map index assignments, and raw JSON string constants
 - `layerdep` only enforces the package prefixes listed in `settings.dependency_rules`
+- `namedreturn` is intentionally strict: once a named return value has been assigned, later explicit returns are rejected
+- `redeclare` skips `err` because `errshort` owns the more specific diagnostic for that case
 - `varreuse` is intentionally heuristic and focuses on descriptive variable names plus stable semantic tokens from assignment sources
+- Business-semantic naming, singular/plural correctness, and comment quality still require code review judgment

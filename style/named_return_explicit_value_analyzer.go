@@ -23,14 +23,14 @@ func newNamedReturnExplicitValueAnalyzer() *analysis.Analyzer {
 func runNamedReturnExplicitValueAnalyzer(pass *analysis.Pass) (any, error) {
 	for _, file := range pass.Files {
 		ast.Inspect(file, func(node ast.Node) bool {
-			functionDeclaration, ok := node.(*ast.FuncDecl)
-			if ok {
+			functionDeclaration, isFunctionDeclaration := node.(*ast.FuncDecl)
+			if isFunctionDeclaration {
 				checkFunctionBody(pass, functionDeclaration.Type, functionDeclaration.Body)
 				return false
 			}
 
-			functionLiteral, ok := node.(*ast.FuncLit)
-			if ok {
+			functionLiteral, isFunctionLiteral := node.(*ast.FuncLit)
+			if isFunctionLiteral {
 				checkFunctionBody(pass, functionLiteral.Type, functionLiteral.Body)
 				return false
 			}
@@ -66,10 +66,6 @@ func checkFunctionBody(pass *analysis.Pass, functionType *ast.FuncType, function
 		}
 
 		if !hasAssignedNamedReturnBeforePosition(assignedNamedReturnPositions, returnStatement.Pos()) {
-			return true
-		}
-
-		if !matchesNamedReturnMirror(pass, returnStatement.Results, namedReturnVariables) {
 			return true
 		}
 
@@ -156,36 +152,4 @@ func hasAssignedNamedReturnBeforePosition(
 	}
 
 	return false
-}
-
-func matchesNamedReturnMirror(
-	pass *analysis.Pass,
-	returnExpressions []ast.Expr,
-	namedReturnVariables []namedReturnVariable,
-) bool {
-	if len(returnExpressions) != len(namedReturnVariables) {
-		return false
-	}
-
-	for index, returnExpression := range returnExpressions {
-		identifier, ok := returnExpression.(*ast.Ident)
-		if !ok {
-			return false
-		}
-
-		if identifier.Name == "nil" {
-			continue
-		}
-
-		identifierObject := objectOfIdentifier(pass, identifier)
-		if identifierObject == nil {
-			return false
-		}
-
-		if identifierObject != namedReturnVariables[index].object {
-			return false
-		}
-	}
-
-	return true
 }

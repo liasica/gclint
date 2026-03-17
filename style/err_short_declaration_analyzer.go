@@ -24,8 +24,7 @@ func runErrShortDeclarationAnalyzer(pass *analysis.Pass) (any, error) {
 			}
 
 			for _, leftHandSideExpression := range assignStatement.Lhs {
-				var identifier *ast.Ident
-				identifier, ok = leftHandSideExpression.(*ast.Ident)
+				identifier, ok := leftHandSideExpression.(*ast.Ident)
 				if !ok || identifier.Name != "err" {
 					continue
 				}

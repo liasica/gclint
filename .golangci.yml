@@ -3,12 +3,18 @@ version: "2"
 linters:
   default: none
   enable:
+    - dupl
+    - dupword
     - errcheck
+    - godot
     - govet
     - ineffassign
+    - misspell
     - revive
     - staticcheck
     - style
+    - whitespace
+    - wsl_v5
   settings:
     custom:
       style:

@@ -24,3 +24,33 @@ func goodNamedReturn() (payloadValue *payload, err error) {
 
 	return
 }
+
+func badDerivedNamedReturn() (payloadValue *payload, err error) {
+	payloadValue, err = loadPayload()
+	if err != nil {
+		return &payload{}, err // want "named return values were assigned before this explicit return"
+	}
+
+	return clonePayload(payloadValue), nil // want "named return values were assigned before this explicit return"
+}
+
+func goodExplicitReturnBeforeAssignment() (payloadValue *payload, err error) {
+	if false {
+		return nil, nil
+	}
+
+	payloadValue, err = loadPayload()
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func clonePayload(input *payload) *payload {
+	if input == nil {
+		return nil
+	}
+
+	return &payload{}
+}
