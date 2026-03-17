@@ -1,8 +1,8 @@
 version: v2.11.3
-name: gcl
+name: gclint
 destination: ./.bin
 
 plugins:
-  - module: github.com/liasica/gcl
-    import: github.com/liasica/gcl/style
+  - module: github.com/liasica/gclint
+    import: github.com/liasica/gclint/style
     path: .

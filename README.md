@@ -1,10 +1,10 @@
-# gcl
+# gclint
 
 English | [中文](README.zh-CN.md)
 
-Practical Go style, shipped as `golangci-lint`.
+Practical Go style, shipped as `gclint`.
 
-`gcl` builds a custom `golangci-lint` binary named `gcl`.
+`gclint` builds a custom `golangci-lint` binary named `gclint`.
 
 The repository currently contains one module plugin package: `style`.
 
@@ -19,31 +19,31 @@ The release workflow derives its build matrix from the official `golangci-lint` 
 `install.sh` detects the current platform automatically and downloads the matching asset.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/liasica/gcl/master/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/liasica/gclint/master/install.sh | sh
 ```
 
 Install to a custom directory:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/liasica/gcl/master/install.sh | GCL_INSTALL_DIR="$HOME/.local/bin" sh
+curl -fsSL https://raw.githubusercontent.com/liasica/gclint/master/install.sh | GCLINT_INSTALL_DIR="$HOME/.local/bin" sh
 ```
 
 Install a specific release:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/liasica/gcl/master/install.sh | GCL_VERSION="2026.03.17-deadbee" sh
+curl -fsSL https://raw.githubusercontent.com/liasica/gclint/master/install.sh | GCLINT_VERSION="2026.03.17-deadbee" sh
 ```
 
 Override auto-detection when needed:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/liasica/gcl/master/install.sh | \
-  GCL_OS=linux GCL_ARCH=armv7 GCL_INSTALL_DIR="$HOME/.local/bin" sh
+curl -fsSL https://raw.githubusercontent.com/liasica/gclint/master/install.sh | \
+  GCLINT_OS=linux GCLINT_ARCH=armv7 GCLINT_INSTALL_DIR="$HOME/.local/bin" sh
 ```
 
 ### Download a release asset manually
 
-Release assets are published as `gcl_<version>_<os>_<arch>.tar.gz` for Unix-like targets and `gcl_<version>_<os>_<arch>.zip` for Windows.
+Release assets are published as `gclint_<version>_<os>_<arch>.tar.gz` for Unix-like targets and `gclint_<version>_<os>_<arch>.zip` for Windows.
 
 Current release targets:
 
@@ -59,7 +59,7 @@ Current release targets:
 ```bash
 make install-lint
 make build-lint
-install -m 0755 ./.bin/gcl /usr/local/bin/gcl
+install -m 0755 ./.bin/gclint /usr/local/bin/gclint
 ```
 
 ## Quick Start
@@ -72,7 +72,7 @@ make ci
 make clean
 ```
 
-`make lint` builds `.bin/gcl` from `.custom-gcl.yml` and runs it against the repository.
+`make lint` builds `.bin/gclint` from `.custom-gcl.yml` and runs it against the repository.
 
 ## Current Rules
 

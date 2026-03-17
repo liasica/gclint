@@ -1,4 +1,4 @@
-module github.com/liasica/gcl
+module github.com/liasica/gclint
 
 go 1.25.5
 

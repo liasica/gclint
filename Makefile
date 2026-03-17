@@ -1,8 +1,8 @@
 GO ?= go
 GOLANGCI_LINT ?= golangci-lint
-CUSTOM_GCL_CONFIG ?= ./.custom-gcl.yml
-GOLANGCI_LINT_VERSION ?= $(shell sed -n 's/^version:[[:space:]]*//p' $(CUSTOM_GCL_CONFIG) | head -n 1)
-CUSTOM_GCL ?= ./.bin/gcl
+CUSTOM_GCLINT_CONFIG ?= ./.custom-gcl.yml
+GOLANGCI_LINT_VERSION ?= $(shell sed -n 's/^version:[[:space:]]*//p' $(CUSTOM_GCLINT_CONFIG) | head -n 1)
+CUSTOM_GCLINT ?= ./.bin/gclint
 RELEASE_DIR ?= ./.release
 TARGET_OS ?= $(shell $(GO) env GOOS)
 TARGET_ARCH ?= $(shell $(GO) env GOARCH)
@@ -25,7 +25,7 @@ build-lint:
 	$(GOLANGCI_LINT) custom
 
 lint: verify-config build-lint
-	$(CUSTOM_GCL) run ./...
+	$(CUSTOM_GCLINT) run ./...
 
 ci: test lint
 
@@ -35,7 +35,7 @@ package-release: verify-config
 	asset_arch="$(TARGET_ARCH)"; \
 	goarm="$(TARGET_GOARM)"; \
 	archive_format="tar.gz"; \
-	package_binary_name="gcl"; \
+	package_binary_name="gclint"; \
 	if [ "$(TARGET_ARCH)" = "arm" ]; then \
 		if [ -z "$$goarm" ]; then \
 			echo "TARGET_GOARM is required when TARGET_ARCH=arm" >&2; \
@@ -45,16 +45,16 @@ package-release: verify-config
 	fi; \
 	if [ "$(TARGET_OS)" = "windows" ]; then \
 		archive_format="zip"; \
-		package_binary_name="gcl.exe"; \
+		package_binary_name="gclint.exe"; \
 		command -v zip >/dev/null 2>&1 || { echo "zip is required to package Windows artifacts" >&2; exit 1; }; \
 	fi; \
 	build_dir="$$release_root/build/$(TARGET_OS)_$$asset_arch"; \
 	package_dir="$$release_root/package/$(TARGET_OS)_$$asset_arch"; \
 	rm -rf "$$build_dir" "$$package_dir"; \
 	mkdir -p "$$build_dir" "$$package_dir"; \
-	GOOS="$(TARGET_OS)" GOARCH="$(TARGET_ARCH)" GOARM="$$goarm" GOMIPS="$(TARGET_GOMIPS)" CGO_ENABLED=0 "$(GOLANGCI_LINT)" custom --name gcl --destination "$$build_dir"; \
-	cp "$$build_dir/gcl" "$$package_dir/$$package_binary_name"; \
-	archive_path="$$release_root/gcl_$(VERSION)_$(TARGET_OS)_$$asset_arch.$$archive_format"; \
+	GOOS="$(TARGET_OS)" GOARCH="$(TARGET_ARCH)" GOARM="$$goarm" GOMIPS="$(TARGET_GOMIPS)" CGO_ENABLED=0 "$(GOLANGCI_LINT)" custom --name gclint --destination "$$build_dir"; \
+	cp "$$build_dir/gclint" "$$package_dir/$$package_binary_name"; \
+	archive_path="$$release_root/gclint_$(VERSION)_$(TARGET_OS)_$$asset_arch.$$archive_format"; \
 	rm -f "$$archive_path"; \
 	if [ "$$archive_format" = "zip" ]; then \
 		(cd "$$package_dir" && zip -q "$$archive_path" "$$package_binary_name"); \

@@ -1,10 +1,10 @@
-# gcl
+# gclint
 
 [English](README.md) | 中文
 
-面向工程实践的 Go 风格约束，直接交付为 `golangci-lint`。
+面向工程实践的 Go 风格约束，直接交付为 `gclint`。
 
-`gcl` 用于构建一个名为 `gcl` 的自定义 `golangci-lint` 二进制。
+`gclint` 用于构建一个名为 `gclint` 的自定义 `golangci-lint` 二进制。
 
 当前仓库只有一个模块插件包：`style`。
 
@@ -19,31 +19,31 @@
 `install.sh` 会自动识别当前平台并下载对应的发布包。
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/liasica/gcl/master/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/liasica/gclint/master/install.sh | sh
 ```
 
 安装到自定义目录：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/liasica/gcl/master/install.sh | GCL_INSTALL_DIR="$HOME/.local/bin" sh
+curl -fsSL https://raw.githubusercontent.com/liasica/gclint/master/install.sh | GCLINT_INSTALL_DIR="$HOME/.local/bin" sh
 ```
 
 安装指定版本：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/liasica/gcl/master/install.sh | GCL_VERSION="2026.03.17-deadbee" sh
+curl -fsSL https://raw.githubusercontent.com/liasica/gclint/master/install.sh | GCLINT_VERSION="2026.03.17-deadbee" sh
 ```
 
 需要时也可以手动覆盖平台识别结果：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/liasica/gcl/master/install.sh | \
-  GCL_OS=linux GCL_ARCH=armv7 GCL_INSTALL_DIR="$HOME/.local/bin" sh
+curl -fsSL https://raw.githubusercontent.com/liasica/gclint/master/install.sh | \
+  GCLINT_OS=linux GCLINT_ARCH=armv7 GCLINT_INSTALL_DIR="$HOME/.local/bin" sh
 ```
 
 ### 手动下载 GitHub Release 资产
 
-Unix-like 平台发布为 `gcl_<version>_<os>_<arch>.tar.gz`，Windows 发布为 `gcl_<version>_<os>_<arch>.zip`。
+Unix-like 平台发布为 `gclint_<version>_<os>_<arch>.tar.gz`，Windows 发布为 `gclint_<version>_<os>_<arch>.zip`。
 
 当前发布平台：
 
@@ -59,7 +59,7 @@ Unix-like 平台发布为 `gcl_<version>_<os>_<arch>.tar.gz`，Windows 发布为
 ```bash
 make install-lint
 make build-lint
-install -m 0755 ./.bin/gcl /usr/local/bin/gcl
+install -m 0755 ./.bin/gclint /usr/local/bin/gclint
 ```
 
 ## 快速开始
@@ -72,7 +72,7 @@ make ci
 make clean
 ```
 
-`make lint` 会根据 `.custom-gcl.yml` 构建 `.bin/gcl`，然后扫描当前仓库。
+`make lint` 会根据 `.custom-gcl.yml` 构建 `.bin/gclint`，然后扫描当前仓库。
 
 ## 当前规则
 

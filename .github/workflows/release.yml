@@ -100,7 +100,7 @@ jobs:
         uses: actions/upload-artifact@v7.0.0
         with:
           name: release-${{ matrix.goos }}-${{ matrix.asset_arch }}
-          path: ./.release/gcl_${{ needs.prepare.outputs.version }}_${{ matrix.goos }}_${{ matrix.asset_arch }}.${{ matrix.archive_format }}
+          path: ./.release/gclint_${{ needs.prepare.outputs.version }}_${{ matrix.goos }}_${{ matrix.asset_arch }}.${{ matrix.archive_format }}
           if-no-files-found: error
           include-hidden-files: true
 
@@ -121,7 +121,7 @@ jobs:
       - name: Generate checksums
         run: |
           cd ./.release
-          sha256sum gcl_* > checksums.txt
+          sha256sum gclint_* > checksums.txt
 
       - name: Publish GitHub release
         env:
@@ -139,10 +139,10 @@ jobs:
           } > "${release_notes_file}"
 
           if gh release view "${RELEASE_VERSION}" --repo "${GH_REPO}" >/dev/null 2>&1; then
-            gh release upload "${RELEASE_VERSION}" ./.release/gcl_* ./.release/checksums.txt --repo "${GH_REPO}" --clobber
+            gh release upload "${RELEASE_VERSION}" ./.release/gclint_* ./.release/checksums.txt --repo "${GH_REPO}" --clobber
             gh release edit "${RELEASE_VERSION}" --repo "${GH_REPO}" --title "${RELEASE_VERSION}" --notes-file "${release_notes_file}"
           else
-            gh release create "${RELEASE_VERSION}" ./.release/gcl_* ./.release/checksums.txt \
+            gh release create "${RELEASE_VERSION}" ./.release/gclint_* ./.release/checksums.txt \
               --repo "${GH_REPO}" \
               --title "${RELEASE_VERSION}" \
               --notes-file "${release_notes_file}" \
