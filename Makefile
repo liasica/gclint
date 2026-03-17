@@ -45,7 +45,7 @@ lint: verify-config build-lint
 
 ci: format-check test lint
 
-package-release: verify-config
+package-release:
 	@set -eu; \
 	source_config="$(CUSTOM_GCLINT_CONFIG)"; \
 	compat_config="$(CUSTOM_GCLINT_COMPAT_CONFIG)"; \
