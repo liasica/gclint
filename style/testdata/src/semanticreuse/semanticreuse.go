@@ -1,4 +1,3 @@
-// Package semanticreuse contains analyzer fixtures for semantic variable reuse checks.
 package semanticreuse
 
 func marshalUser() ([]byte, error) {

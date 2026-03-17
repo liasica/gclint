@@ -1,4 +1,3 @@
-// Package redeclare contains analyzer fixtures for same-scope short redeclaration checks.
 package redeclare
 
 func readFirstValue() (string, error) {

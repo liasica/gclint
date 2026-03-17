@@ -1,4 +1,3 @@
-// Package errshortdecl contains analyzer fixtures for err short declaration checks.
 package errshortdecl
 
 func readFirst() (string, error) {

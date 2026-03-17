@@ -1,4 +1,3 @@
-// Package namedreturn contains analyzer fixtures for named return checks.
 package namedreturn
 
 type payload struct{}

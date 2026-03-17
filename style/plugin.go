@@ -1,4 +1,3 @@
-// Package style defines custom golangci-lint analyzers for repository-wide Go rules.
 package style
 
 import (

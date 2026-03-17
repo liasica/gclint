@@ -20,3 +20,8 @@ linters:
       style:
         type: module
         description: Enforce custom Go style rules with the gclint style plugin.
+    revive:
+      enable-default-rules: true
+      rules:
+        - name: package-comments
+          disabled: true

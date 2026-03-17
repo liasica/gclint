@@ -1,4 +1,3 @@
-// Package jsonmapkey contains analyzer fixtures for Chinese JSON and map key checks.
 package jsonmapkey
 
 const userNameKey = "用户名"
