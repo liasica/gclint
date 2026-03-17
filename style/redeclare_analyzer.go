@@ -61,6 +61,7 @@ func runRedeclareAnalyzerInFunction(pass *analysis.Pass, functionType *ast.FuncT
 			}
 
 			leftHandSideExpressions := make([]ast.Expr, 0, 2)
+
 			if currentNode.Key != nil {
 				leftHandSideExpressions = append(leftHandSideExpressions, currentNode.Key)
 			}

@@ -15,13 +15,40 @@ linters:
     - style
     - whitespace
     - wsl_v5
+  exclusions:
+    rules:
+      - linters:
+          - revive
+        text: "should have a package comment|package comment should be of the form"
   settings:
     custom:
       style:
         type: module
         description: Enforce custom Go style rules with the gclint style plugin.
-    revive:
-      enable-default-rules: true
-      rules:
-        - name: package-comments
-          disabled: true
+    wsl_v5:
+      allow-first-in-block: false
+      allow-whole-block: false
+      branch-max-lines: 2
+      case-max-lines: 0
+      default: none
+      enable:
+        - append
+        - assign
+        - assign-exclusive
+        - branch
+        - decl
+        - defer
+        - err
+        - for
+        - go
+        - if
+        - inc-dec
+        - label
+        - leading-whitespace
+        - range
+        - return
+        - select
+        - send
+        - switch
+        - trailing-whitespace
+        - type-switch

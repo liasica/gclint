@@ -153,8 +153,10 @@ func semanticTokensFromExpression(expression ast.Expr) []string {
 	case *ast.CallExpr:
 		return semanticTokensFromExpression(currentExpression.Fun)
 	case *ast.SelectorExpr:
-		selectorTokens := semanticTokensFromExpression(currentExpression.X)
-		selectorTokens = append(selectorTokens, semanticTokensFromName(currentExpression.Sel.Name)...)
+		selectorTokens := append(
+			semanticTokensFromExpression(currentExpression.X),
+			semanticTokensFromName(currentExpression.Sel.Name)...,
+		)
 
 		return uniqueTokens(selectorTokens)
 	case *ast.Ident:
