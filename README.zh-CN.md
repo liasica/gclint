@@ -6,7 +6,7 @@
 
 `gclint` 用于构建一个名为 `gclint` 的自定义 `golangci-lint` 二进制。
 
-当前仓库只有一个模块插件包：`style`。
+当前仓库只有一个模块插件包：`gclint`。
 
 ## 安装
 
@@ -84,6 +84,8 @@ make clean
 - `chinesekey`：禁止中文 `json` tag key、固化 map key，以及原始 JSON 字符串中的中文 key
 - `layerdep`：禁止低层包导入已配置的高层包
 - `varreuse`：用启发式方式检查“语义明确的变量被复用为其他业务对象容器”
+- `funcparamlinebreak`：当函数参数个数小于可配置阈值（默认 5）时，禁止参数列表换行
+- `errvarname`：禁止用非 `err` 的变量名接收函数调用的 error 返回值（可配置）
 
 默认启用的官方 linter：
 
@@ -104,9 +106,9 @@ make clean
 linters:
   settings:
     custom:
-      style:
+      gclint:
         type: module
-        description: Enforce custom Go style rules with the gclint style plugin.
+        description: Enforce custom Go style rules with the gclint plugin.
         settings:
           dependency_rules:
             - source: github.com/example/project/internal/repository
@@ -116,6 +118,41 @@ linters:
 ```
 
 把这些包前缀替换成你项目里的真实分层路径即可。
+
+## 参数换行阈值配置
+
+`funcparamlinebreak` 在参数个数低于阈值时要求参数列表写在一行。
+
+默认阈值为 5，可在 `.golangci.yml` 中覆盖：
+
+```yaml
+linters:
+  settings:
+    custom:
+      gclint:
+        type: module
+        description: Enforce custom Go style rules with the gclint plugin.
+        settings:
+          max_inline_params: 5
+```
+
+## 错误变量名配置
+
+`errvarname` 要求 error 返回值必须用 `err`（或配置允许的名称）接收。
+
+默认开启，仅允许 `err`。可在 `.golangci.yml` 中覆盖：
+
+```yaml
+linters:
+  settings:
+    custom:
+      gclint:
+        settings:
+          err_varname:
+            enabled: true
+            allowed_names:
+              - err
+```
 
 ## 规则覆盖清单
 
@@ -143,4 +180,6 @@ linters:
 - `namedreturn` 采用严格模式：命名返回值一旦赋值，后续显式 `return ...` 都会报错
 - `redeclare` 同时覆盖同 block 复用和内层 block shadowing，例如函数内的 `if err := ...`
 - `varreuse` 是刻意保持保守的启发式规则，重点看描述性变量名和赋值来源里的稳定语义 token
+- `funcparamlinebreak` 只检查函数定义，不检查函数调用；阈值默认 5，可通过 `settings.max_inline_params` 覆盖
+- `errvarname` 只检查赋值语句中函数调用的 error 接收变量；`_` 始终允许；可通过 `settings.err_varname.enabled: false` 关闭
 - 业务语义命名、单复数准确性、注释质量这类规则仍然需要人工 code review 参与判断

@@ -6,7 +6,7 @@ Practical Go style, shipped as `gclint`.
 
 `gclint` builds a custom `golangci-lint` binary named `gclint`.
 
-The repository currently contains one module plugin package: `style`.
+The repository currently contains one module plugin package: `gclint`.
 
 ## Installation
 
@@ -84,6 +84,8 @@ Custom analyzers:
 - `chinesekey`: forbids Chinese JSON tag keys, Chinese string keys in persistent maps, and Chinese keys inside raw JSON string constants
 - `layerdep`: forbids lower-level packages from importing configured higher-level packages
 - `varreuse`: heuristically forbids reusing a semantic variable as a container for a different business object
+- `funcparamlinebreak`: forbids line breaks in function parameter lists when the parameter count is below a configurable threshold (default 5)
+- `errvarname`: forbids using non-`err` variable names to receive error returns from function calls (configurable)
 
 Official linters enabled by default:
 
@@ -104,9 +106,9 @@ Example in `.golangci.yml`:
 linters:
   settings:
     custom:
-      style:
+      gclint:
         type: module
-        description: Enforce custom Go style rules with the gclint style plugin.
+        description: Enforce custom Go style rules with the gclint plugin.
         settings:
           dependency_rules:
             - source: github.com/example/project/internal/repository
@@ -116,6 +118,41 @@ linters:
 ```
 
 Replace those package prefixes with your real architecture layers.
+
+## Function Parameter Linebreak Configuration
+
+`funcparamlinebreak` enforces single-line parameter lists when the count is below a threshold.
+
+Default threshold is 5. Override it in `.golangci.yml`:
+
+```yaml
+linters:
+  settings:
+    custom:
+      gclint:
+        type: module
+        description: Enforce custom Go style rules with the gclint plugin.
+        settings:
+          max_inline_params: 5
+```
+
+## Error Variable Name Configuration
+
+`errvarname` requires error return values to be received by `err` (or other configured names).
+
+Default: enabled, only `err` is allowed. Override in `.golangci.yml`:
+
+```yaml
+linters:
+  settings:
+    custom:
+      gclint:
+        settings:
+          err_varname:
+            enabled: true
+            allowed_names:
+              - err
+```
 
 ## Rule Coverage
 
@@ -143,4 +180,6 @@ The checklist below maps the current repository status to the Go style document 
 - `namedreturn` is intentionally strict: once a named return value has been assigned, later explicit returns are rejected
 - `redeclare` covers same-block reuse and inner-block shadowing such as `if err := ...` inside the same function
 - `varreuse` is intentionally heuristic and focuses on descriptive variable names plus stable semantic tokens from assignment sources
+- `funcparamlinebreak` only checks function definitions, not function calls; the threshold defaults to 5 and can be overridden via `settings.max_inline_params`
+- `errvarname` only checks assignment statements where the RHS is a function call; `_` is always allowed; can be disabled via `settings.err_varname.enabled: false`
 - Business-semantic naming, singular/plural correctness, and comment quality still require code review judgment

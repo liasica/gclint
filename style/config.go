@@ -7,7 +7,14 @@ import (
 )
 
 type pluginSettings struct {
-	DependencyRules []dependencyRule `json:"dependency_rules"`
+	DependencyRules []dependencyRule  `json:"dependency_rules"`
+	MaxInlineParams int               `json:"max_inline_params"`
+	ErrVarname      *errVarnameConfig `json:"err_varname"`
+}
+
+type errVarnameConfig struct {
+	Enabled      *bool    `json:"enabled"`
+	AllowedNames []string `json:"allowed_names"`
 }
 
 type dependencyRule struct {
@@ -16,12 +23,14 @@ type dependencyRule struct {
 }
 
 type rawPluginConfig struct {
-	Type            string           `json:"type"`
-	Description     string           `json:"description"`
-	OriginalURL     string           `json:"original-url"`
-	Path            string           `json:"path"`
-	Settings        pluginSettings   `json:"settings"`
-	DependencyRules []dependencyRule `json:"dependency_rules"`
+	Type            string            `json:"type"`
+	Description     string            `json:"description"`
+	OriginalURL     string            `json:"original-url"`
+	Path            string            `json:"path"`
+	Settings        pluginSettings    `json:"settings"`
+	DependencyRules []dependencyRule  `json:"dependency_rules"`
+	MaxInlineParams int               `json:"max_inline_params"`
+	ErrVarname      *errVarnameConfig `json:"err_varname"`
 }
 
 func decodePluginSettings(rawSettings any) (pluginSettings, error) {
@@ -36,6 +45,14 @@ func decodePluginSettings(rawSettings any) (pluginSettings, error) {
 			decodedSettings.DependencyRules = rawConfig.DependencyRules
 		}
 
+		if decodedSettings.MaxInlineParams == 0 {
+			decodedSettings.MaxInlineParams = rawConfig.MaxInlineParams
+		}
+
+		if decodedSettings.ErrVarname == nil {
+			decodedSettings.ErrVarname = rawConfig.ErrVarname
+		}
+
 		return normalizePluginSettings(decodedSettings), nil
 	}
 
@@ -48,6 +65,10 @@ func decodePluginSettings(rawSettings any) (pluginSettings, error) {
 }
 
 func normalizePluginSettings(settings pluginSettings) pluginSettings {
+	if settings.MaxInlineParams <= 0 {
+		settings.MaxInlineParams = defaultMaxInlineParams
+	}
+
 	normalizedDependencyRules := make([]dependencyRule, 0, len(settings.DependencyRules))
 
 	for _, currentDependencyRule := range settings.DependencyRules {
@@ -79,4 +100,33 @@ func normalizePluginSettings(settings pluginSettings) pluginSettings {
 	settings.DependencyRules = normalizedDependencyRules
 
 	return settings
+}
+
+// resolveErrVarnameSettings 将配置转换为 analyzer 可用的 settings
+func resolveErrVarnameSettings(config *errVarnameConfig) errVarnameSettings {
+	defaults := defaultErrVarnameSettings()
+
+	if config == nil {
+		return defaults
+	}
+
+	if config.Enabled != nil {
+		defaults.Enabled = *config.Enabled
+	}
+
+	if len(config.AllowedNames) > 0 {
+		allowedNames := make(map[string]struct{}, len(config.AllowedNames))
+		for _, name := range config.AllowedNames {
+			trimmed := strings.TrimSpace(name)
+			if trimmed != "" {
+				allowedNames[trimmed] = struct{}{}
+			}
+		}
+
+		if len(allowedNames) > 0 {
+			defaults.AllowedNames = allowedNames
+		}
+	}
+
+	return defaults
 }

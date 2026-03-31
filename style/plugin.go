@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	register.Plugin("style", newPlugin)
+	register.Plugin("gclint", newPlugin)
 }
 
 type plugin struct {
@@ -31,6 +31,8 @@ func (pluginInstance plugin) BuildAnalyzers() ([]*analysis.Analyzer, error) {
 		newJSONMapKeyAnalyzer(),
 		newLayerDependencyAnalyzer(pluginInstance.settings.DependencyRules),
 		newSemanticVariableReuseAnalyzer(),
+		newFuncParamLinebreakAnalyzer(pluginInstance.settings.MaxInlineParams),
+		newErrVarnameAnalyzer(resolveErrVarnameSettings(pluginInstance.settings.ErrVarname)),
 	}, nil
 }
 

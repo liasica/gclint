@@ -1,5 +1,25 @@
 package redeclare
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type workerResponse struct{}
+
+type result struct {
+	resp *workerResponse
+	err  error
+}
+
+type stdoutReader interface {
+	ReadBytes(delimiter byte) ([]byte, error)
+}
+
+type workerClient struct {
+	stdout stdoutReader
+}
+
 func readFirstValue() (string, error) {
 	return "first", nil
 }
@@ -115,4 +135,26 @@ func nestedFunctionShadowingIsAllowed(values []string) []string {
 	_ = firstValue
 
 	return values
+}
+
+func goroutineErrShadowingIsForbidden(c *workerClient) <-chan result {
+	responseChannel := make(chan result, 1)
+
+	go func() {
+		line, err := c.stdout.ReadBytes('\n')
+		if err != nil {
+			responseChannel <- result{err: err}
+			return
+		}
+
+		var response workerResponse
+		if err := json.Unmarshal(line, &response); err != nil { // want "existing variable \"err\" must not be reused in short variable declaration"
+			responseChannel <- result{err: fmt.Errorf("decode semantic worker response: %w", err)}
+			return
+		}
+
+		responseChannel <- result{resp: &response}
+	}()
+
+	return responseChannel
 }

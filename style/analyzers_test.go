@@ -47,3 +47,15 @@ func TestSemanticVariableReuseAnalyzer(t *testing.T) {
 
 	analysistest.Run(t, testDataDirectory, newSemanticVariableReuseAnalyzer(), "semanticreuse")
 }
+
+func TestFuncParamLinebreakAnalyzer(t *testing.T) {
+	testDataDirectory := analysistest.TestData()
+
+	analysistest.Run(t, testDataDirectory, newFuncParamLinebreakAnalyzer(defaultMaxInlineParams), "funcparamlinebreak")
+}
+
+func TestErrVarnameAnalyzer(t *testing.T) {
+	testDataDirectory := analysistest.TestData()
+
+	analysistest.Run(t, testDataDirectory, newErrVarnameAnalyzer(defaultErrVarnameSettings()), "errvarname")
+}

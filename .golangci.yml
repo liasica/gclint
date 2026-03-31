@@ -6,25 +6,49 @@ linters:
     - dupl
     - dupword
     - errcheck
-    - godot
     - govet
     - ineffassign
     - misspell
     - revive
     - staticcheck
-    - style
+    - gclint
     - whitespace
     - wsl_v5
   exclusions:
+    paths:
+      - "^runtime/"
+      - "^public/"
+      - "^ent/"
     rules:
       - linters:
           - revive
         text: "should have a package comment|package comment should be of the form"
   settings:
+    lll:
+      line-length: 200
     custom:
-      style:
+      gclint:
         type: module
-        description: Enforce custom Go style rules with the gclint style plugin.
+        description: Enforce custom Go style rules with the gclint plugin.
+        settings:
+          max_inline_params: 5
+          err_varname:
+            enabled: true
+            allowed_names:
+              - err
+    revive:
+      severity: warning
+      rules:
+        - name: var-naming
+        - name: error-return
+        - name: error-naming
+        - name: indent-error-flow
+        - name: unused-parameter
+        - name: range-val-in-closure
+        - name: empty-block
+        - name: superfluous-else
+        - name: unreachable-code
+        - name: redefines-builtin-id
     wsl_v5:
       allow-first-in-block: false
       allow-whole-block: false
