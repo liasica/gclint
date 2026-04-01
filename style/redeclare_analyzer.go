@@ -148,4 +148,3 @@ func reusedVariableInFunctionScopeChain(pass *analysis.Pass, identifier *ast.Ide
 
 	return nil
 }
-
