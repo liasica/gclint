@@ -132,17 +132,20 @@ func reusedVariableInFunctionScopeChain(pass *analysis.Pass, identifier *ast.Ide
 	}
 
 	for currentScope = currentScope.Parent(); currentScope != nil; currentScope = currentScope.Parent() {
+		// must check boundary before looking up variable, otherwise when definedObject.Parent() == functionScope,
+		// the first loop iteration would jump to outer function scope, causing false matches with outer variables of the same name
+		if currentScope == functionScope {
+			break
+		}
+
 		outerObject := currentScope.Lookup(identifier.Name)
 		if outerObject != nil && outerObject.Pos() < identifier.Pos() {
 			if _, ok := outerObject.(*types.Var); ok {
 				return outerObject
 			}
 		}
-
-		if currentScope == functionScope {
-			break
-		}
 	}
 
 	return nil
 }
+

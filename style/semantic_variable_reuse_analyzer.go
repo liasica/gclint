@@ -63,11 +63,7 @@ func checkSemanticVariableReuse(pass *analysis.Pass, functionBody *ast.BlockStmt
 	})
 }
 
-func recordAssignStatementSemantics(
-	pass *analysis.Pass,
-	semanticStateByObject map[types.Object]semanticVariableState,
-	assignStatement *ast.AssignStmt,
-) {
+func recordAssignStatementSemantics(pass *analysis.Pass, semanticStateByObject map[types.Object]semanticVariableState, assignStatement *ast.AssignStmt) {
 	for leftHandSideIndex, leftHandSideExpression := range assignStatement.Lhs {
 		identifier, ok := leftHandSideExpression.(*ast.Ident)
 		if !ok || identifier.Name == "_" {
@@ -91,11 +87,7 @@ func recordAssignStatementSemantics(
 	}
 }
 
-func recordDeclarationSemantics(
-	pass *analysis.Pass,
-	semanticStateByObject map[types.Object]semanticVariableState,
-	declarationStatement *ast.DeclStmt,
-) {
+func recordDeclarationSemantics(pass *analysis.Pass, semanticStateByObject map[types.Object]semanticVariableState, declarationStatement *ast.DeclStmt) {
 	generalDeclaration, ok := declarationStatement.Decl.(*ast.GenDecl)
 	if !ok || generalDeclaration.Tok != token.VAR {
 		return
