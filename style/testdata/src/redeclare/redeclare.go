@@ -89,6 +89,17 @@ func innerScopeShadowingIsForbidden() error {
 	return nil
 }
 
+func parameterShadowingIsForbidden(firstValue string) error {
+	if firstValue != "" {
+		firstValue, secondValue := readPair() // want "existing variable \"firstValue\" must not be reused in short variable declaration"
+		if firstValue == "" || secondValue == "" {
+			return nil
+		}
+	}
+
+	return nil
+}
+
 func failValidation() error {
 	return nil
 }

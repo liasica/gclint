@@ -38,10 +38,7 @@ func runRedeclareAnalyzerInFunction(pass *analysis.Pass, functionType *ast.FuncT
 		return
 	}
 
-	functionScope := pass.TypesInfo.Scopes[functionType]
-	if functionScope == nil {
-		functionScope = pass.TypesInfo.Scopes[functionBody]
-	}
+	functionScopes := collectFunctionScopes(pass, functionType, functionBody)
 
 	inspectWithoutNestedFunctions(functionBody, func(node ast.Node) bool {
 		switch currentNode := node.(type) {
@@ -54,7 +51,7 @@ func runRedeclareAnalyzerInFunction(pass *analysis.Pass, functionType *ast.FuncT
 				return true
 			}
 
-			reportRedeclaredIdentifiers(pass, currentNode.Lhs, functionScope)
+			reportRedeclaredIdentifiers(pass, currentNode.Lhs, functionScopes)
 		case *ast.RangeStmt:
 			if currentNode.Tok != token.DEFINE {
 				return true
@@ -70,11 +67,32 @@ func runRedeclareAnalyzerInFunction(pass *analysis.Pass, functionType *ast.FuncT
 				leftHandSideExpressions = append(leftHandSideExpressions, currentNode.Value)
 			}
 
-			reportRedeclaredIdentifiers(pass, leftHandSideExpressions, functionScope)
+			reportRedeclaredIdentifiers(pass, leftHandSideExpressions, functionScopes)
 		}
 
 		return true
 	})
+}
+
+func collectFunctionScopes(pass *analysis.Pass, functionType *ast.FuncType, functionBody *ast.BlockStmt) map[*types.Scope]struct{} {
+	functionScopes := make(map[*types.Scope]struct{})
+
+	addFunctionScope(functionScopes, pass.TypesInfo.Scopes[functionType])
+	inspectWithoutNestedFunctions(functionBody, func(node ast.Node) bool {
+		addFunctionScope(functionScopes, pass.TypesInfo.Scopes[node])
+
+		return true
+	})
+
+	return functionScopes
+}
+
+func addFunctionScope(functionScopes map[*types.Scope]struct{}, scope *types.Scope) {
+	if scope == nil {
+		return
+	}
+
+	functionScopes[scope] = struct{}{}
 }
 
 func isTypeSwitchGuard(assignStatement *ast.AssignStmt) bool {
@@ -90,14 +108,14 @@ func isTypeSwitchGuard(assignStatement *ast.AssignStmt) bool {
 	return typeAssertExpression.Type == nil
 }
 
-func reportRedeclaredIdentifiers(pass *analysis.Pass, leftHandSideExpressions []ast.Expr, functionScope *types.Scope) {
+func reportRedeclaredIdentifiers(pass *analysis.Pass, leftHandSideExpressions []ast.Expr, functionScopes map[*types.Scope]struct{}) {
 	for _, leftHandSideExpression := range leftHandSideExpressions {
 		identifier, ok := leftHandSideExpression.(*ast.Ident)
 		if !ok || identifier.Name == "_" {
 			continue
 		}
 
-		reusedVariable := reusedVariableInFunctionScopeChain(pass, identifier, functionScope)
+		reusedVariable := reusedVariableInFunctionScopeChain(pass, identifier, functionScopes)
 		if reusedVariable == nil {
 			continue
 		}
@@ -110,7 +128,7 @@ func reportRedeclaredIdentifiers(pass *analysis.Pass, leftHandSideExpressions []
 	}
 }
 
-func reusedVariableInFunctionScopeChain(pass *analysis.Pass, identifier *ast.Ident, functionScope *types.Scope) types.Object {
+func reusedVariableInFunctionScopeChain(pass *analysis.Pass, identifier *ast.Ident, functionScopes map[*types.Scope]struct{}) types.Object {
 	identifierObject := objectOfIdentifier(pass, identifier)
 	if identifierObject == nil {
 		return nil
@@ -121,6 +139,10 @@ func reusedVariableInFunctionScopeChain(pass *analysis.Pass, identifier *ast.Ide
 	}
 
 	if pass.TypesInfo.Defs[identifier] == nil {
+		if !scopeBelongsToFunction(functionScopes, identifierObject.Parent()) {
+			return nil
+		}
+
 		return identifierObject
 	}
 
@@ -132,9 +154,7 @@ func reusedVariableInFunctionScopeChain(pass *analysis.Pass, identifier *ast.Ide
 	}
 
 	for currentScope = currentScope.Parent(); currentScope != nil; currentScope = currentScope.Parent() {
-		// must check boundary before looking up variable, otherwise when definedObject.Parent() == functionScope,
-		// the first loop iteration would jump to outer function scope, causing false matches with outer variables of the same name
-		if currentScope == functionScope {
+		if !scopeBelongsToFunction(functionScopes, currentScope) {
 			break
 		}
 
@@ -147,4 +167,14 @@ func reusedVariableInFunctionScopeChain(pass *analysis.Pass, identifier *ast.Ide
 	}
 
 	return nil
+}
+
+func scopeBelongsToFunction(functionScopes map[*types.Scope]struct{}, scope *types.Scope) bool {
+	if scope == nil {
+		return false
+	}
+
+	_, ok := functionScopes[scope]
+
+	return ok
 }
