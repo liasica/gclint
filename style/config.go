@@ -38,8 +38,8 @@ func decodePluginSettings(rawSettings any) (pluginSettings, error) {
 		return pluginSettings{}, nil
 	}
 
-	rawConfig, rawConfigError := register.DecodeSettings[rawPluginConfig](rawSettings)
-	if rawConfigError == nil {
+	rawConfig, err := register.DecodeSettings[rawPluginConfig](rawSettings)
+	if err == nil {
 		decodedSettings := rawConfig.Settings
 		if len(decodedSettings.DependencyRules) == 0 {
 			decodedSettings.DependencyRules = rawConfig.DependencyRules
@@ -56,9 +56,11 @@ func decodePluginSettings(rawSettings any) (pluginSettings, error) {
 		return normalizePluginSettings(decodedSettings), nil
 	}
 
-	decodedSettings, settingsError := register.DecodeSettings[pluginSettings](rawSettings)
-	if settingsError != nil {
-		return pluginSettings{}, rawConfigError
+	var decodedSettings pluginSettings
+
+	decodedSettings, err = register.DecodeSettings[pluginSettings](rawSettings)
+	if err != nil {
+		return pluginSettings{}, err
 	}
 
 	return normalizePluginSettings(decodedSettings), nil
@@ -102,7 +104,7 @@ func normalizePluginSettings(settings pluginSettings) pluginSettings {
 	return settings
 }
 
-// resolveErrVarnameSettings 将配置转换为 analyzer 可用的 settings
+// resolveErrVarnameSettings converts config to settings usable by the analyzer
 func resolveErrVarnameSettings(config *errVarnameConfig) errVarnameSettings {
 	defaults := defaultErrVarnameSettings()
 

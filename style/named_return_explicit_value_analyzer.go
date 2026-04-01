@@ -101,11 +101,7 @@ func collectNamedReturnVariables(pass *analysis.Pass, resultFields *ast.FieldLis
 	return namedReturnVariables
 }
 
-func collectAssignedNamedReturnPositions(
-	pass *analysis.Pass,
-	functionBody *ast.BlockStmt,
-	namedReturnObjects map[types.Object]struct{},
-) map[types.Object]token.Pos {
+func collectAssignedNamedReturnPositions(pass *analysis.Pass, functionBody *ast.BlockStmt, namedReturnObjects map[types.Object]struct{}) map[types.Object]token.Pos {
 	assignedNamedReturnPositions := make(map[types.Object]token.Pos, len(namedReturnObjects))
 
 	inspectWithoutNestedFunctions(functionBody, func(node ast.Node) bool {
@@ -141,10 +137,7 @@ func collectAssignedNamedReturnPositions(
 	return assignedNamedReturnPositions
 }
 
-func hasAssignedNamedReturnBeforePosition(
-	assignedNamedReturnPositions map[types.Object]token.Pos,
-	position token.Pos,
-) bool {
+func hasAssignedNamedReturnBeforePosition(assignedNamedReturnPositions map[types.Object]token.Pos, position token.Pos) bool {
 	for _, assignedPosition := range assignedNamedReturnPositions {
 		if assignedPosition < position {
 			return true

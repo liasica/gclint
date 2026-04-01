@@ -2,6 +2,7 @@ package redeclare
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -157,4 +158,63 @@ func goroutineErrShadowingIsForbidden(c *workerClient) <-chan result {
 	}()
 
 	return responseChannel
+}
+
+func withTransaction(fn func() error) error {
+	return fn()
+}
+
+// closureErrInSameShortVarDecl 复现 bug:
+// 外层 err := f(func() { err := ... }) 闭包内的 err 不应触发 redeclare
+func closureErrInSameShortVarDecl() {
+	err := withTransaction(func() error {
+		val, err := readFirstValue()
+		if err != nil {
+			return err
+		}
+		_ = val
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+}
+
+// closureErrInSameShortVarDeclMultiReturn 多返回值版本
+func closureErrInSameShortVarDeclMultiReturn() {
+	result, err := readFirstValue()
+	if err != nil {
+		panic(err)
+	}
+
+	_ = withTransaction(func() error {
+		val, err := readSecondValue()
+		if err != nil {
+			return err
+		}
+		_ = val
+		return nil
+	})
+
+	_ = result
+}
+
+// closureWithInnerRedeclare 闭包内部自身的 redeclare 仍应报错
+func closureWithInnerRedeclare() {
+	err := withTransaction(func() error {
+		val, err := readFirstValue()
+		if err != nil {
+			return err
+		}
+
+		val2, err := readSecondValue() // want "existing variable \"err\" must not be reused in short variable declaration"
+		_, _ = val, val2
+		return nil
+	})
+
+	_ = errors.New("use errors import")
+
+	if err != nil {
+		panic(err)
+	}
 }

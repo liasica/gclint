@@ -330,11 +330,7 @@ func relatedVariableObjectsFromExpression(pass *analysis.Pass, expression ast.Ex
 	return relatedObjects
 }
 
-func sourceExpressionUsesOnlyRelatedVariables(
-	pass *analysis.Pass,
-	expression ast.Expr,
-	relatedObjects map[types.Object]struct{},
-) bool {
+func sourceExpressionUsesOnlyRelatedVariables(pass *analysis.Pass, expression ast.Expr, relatedObjects map[types.Object]struct{}) bool {
 	if len(relatedObjects) == 0 {
 		return false
 	}
