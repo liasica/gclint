@@ -48,7 +48,8 @@ func checkFunctionBody(pass *analysis.Pass, functionType *ast.FuncType, function
 	}
 
 	namedReturnVariables := collectNamedReturnVariables(pass, functionType.Results)
-	if len(namedReturnVariables) == 0 {
+	// Skip check when there are no named return values or only one
+	if len(namedReturnVariables) <= 1 {
 		return
 	}
 

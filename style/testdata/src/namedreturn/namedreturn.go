@@ -46,6 +46,16 @@ func goodExplicitReturnBeforeAssignment() (payloadValue *payload, err error) {
 	return
 }
 
+// Single named return value allows explicit return
+func singleNamedReturn() (err error) {
+	_, err = loadPayload()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func clonePayload(input *payload) *payload {
 	if input == nil {
 		return nil
