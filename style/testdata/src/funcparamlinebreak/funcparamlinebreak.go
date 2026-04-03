@@ -2,32 +2,32 @@ package funcparamlinebreak
 
 type payload struct{}
 
-// 通过：无参数
+// Pass: no parameters
 func noParams() {}
 
-// 通过：1 个参数写在一行
+// Pass: 1 parameter on a single line
 func oneParamInline(a int) {}
 
-// 报错：1 个参数但换行了
+// Fail: 1 parameter but with line break
 func oneParamMultiline( // want "function has 1 parameters \\(threshold 5\\), parameter list must not span multiple lines"
 	a int,
 ) {
 }
 
-// 通过：2 个参数写在一行
+// Pass: 2 parameters on a single line
 func twoParamsInline(a int, b string) {}
 
-// 报错：2 个参数但换行了
+// Fail: 2 parameters but with line break
 func twoParamsMultiline( // want "function has 2 parameters \\(threshold 5\\), parameter list must not span multiple lines"
 	a int,
 	b string,
 ) {
 }
 
-// 通过：3 个参数写在一行
+// Pass: 3 parameters on a single line
 func threeParamsInline(a int, b string, c bool) {}
 
-// 报错：3 个参数但换行了
+// Fail: 3 parameters but with line break
 func threeParamsMultiline( // want "function has 3 parameters \\(threshold 5\\), parameter list must not span multiple lines"
 	a int,
 	b string,
@@ -35,10 +35,10 @@ func threeParamsMultiline( // want "function has 3 parameters \\(threshold 5\\),
 ) {
 }
 
-// 通过：4 个参数写在一行
+// Pass: 4 parameters on a single line
 func fourParamsInline(a int, b string, c bool, d float64) {}
 
-// 报错：4 个参数但换行了
+// Fail: 4 parameters but with line break
 func fourParamsMultiline( // want "function has 4 parameters \\(threshold 5\\), parameter list must not span multiple lines"
 	a int,
 	b string,
@@ -47,7 +47,7 @@ func fourParamsMultiline( // want "function has 4 parameters \\(threshold 5\\), 
 ) {
 }
 
-// 通过：5 个参数（等于阈值）换行
+// Pass: 5 parameters (equals threshold) with line break
 func fiveParamsMultiline(
 	a int,
 	b string,
@@ -57,7 +57,7 @@ func fiveParamsMultiline(
 ) {
 }
 
-// 通过：6 个参数（超过阈值）换行
+// Pass: 6 parameters (exceeds threshold) with line break
 func sixParamsMultiline(
 	a int,
 	b string,
@@ -68,41 +68,41 @@ func sixParamsMultiline(
 ) {
 }
 
-// 通过：5 个参数写在一行也行
+// Pass: 5 parameters on a single line is also fine
 func fiveParamsInline(a int, b string, c bool, d float64, e []byte) {}
 
-// 通过：方法接收者不影响参数计数
+// Pass: method receiver does not affect parameter count
 type receiver struct{}
 
 func (r *receiver) methodTwoParamsInline(a int, b string) {}
 
-// 报错：方法接收者不影响参数计数，2 个参数换行了
+// Fail: method receiver does not affect parameter count, 2 parameters with line break
 func (r *receiver) methodTwoParamsMultiline( // want "function has 2 parameters \\(threshold 5\\), parameter list must not span multiple lines"
 	a int,
 	b string,
 ) {
 }
 
-// 通过：匿名函数，参数在一行
+// Pass: anonymous function, parameters on a single line
 var inlineFuncLit = func(a int, b string) {}
 
-// 报错：匿名函数，少于 5 个参数但换行
+// Fail: anonymous function, fewer than 5 parameters but with line break
 var multilineFuncLit = func( // want "function has 2 parameters \\(threshold 5\\), parameter list must not span multiple lines"
 	a int,
 	b string,
 ) {
 }
 
-// 通过：分组参数 a, b int 等于 2 个参数，在一行
+// Pass: grouped parameters a, b int count as 2, on a single line
 func groupedParamsInline(a, b int) {}
 
-// 报错：分组参数 a, b int 等于 2 个参数，但换行了
+// Fail: grouped parameters a, b int count as 2, but with line break
 func groupedParamsMultiline( // want "function has 2 parameters \\(threshold 5\\), parameter list must not span multiple lines"
 	a, b int,
 ) {
 }
 
-// 通过：匿名参数（接口方法签名中常见），在一行
+// Pass: anonymous parameters (common in interface method signatures), on a single line
 type exampleInterface interface {
 	Method(int, string, bool)
 }

@@ -24,63 +24,63 @@ func returnTwoNoError() (int, string) {
 	return 0, ""
 }
 
-// 通过：用 err 接收 error 返回值
+// Pass: receive error return with err
 func goodSingleError() {
 	err := returnError()
 	_ = err
 }
 
-// 通过：用 err 接收多返回值中的 error
+// Pass: receive error from multi-return with err
 func goodMultiReturn() {
 	_, err := returnValueAndError()
 	_ = err
 }
 
-// 通过：用 _ 忽略 error
+// Pass: ignore error with _
 func goodBlankIdentifier() {
 	_ = returnError()
 }
 
-// 通过：用 _ 忽略多返回值中的 error
+// Pass: ignore error from multi-return with _
 func goodBlankMultiReturn() {
 	_, _ = returnValueAndError()
 }
 
-// 通过：函数不返回 error
+// Pass: function does not return error
 func goodNoError() {
 	_ = returnNoError()
 }
 
-// 通过：多返回值但最后一个不是 error
+// Pass: multi-return but last value is not error
 func goodTwoNoError() {
 	_, _ = returnTwoNoError()
 }
 
-// 报错：用 e 接收 error
+// Fail: receive error with e
 func badSingleVarE() {
 	e := returnError() // want `error return must be received by "err", not "e"`
 	_ = e
 }
 
-// 报错：用 myErr 接收 error
+// Fail: receive error with myErr
 func badSingleVarMyErr() {
 	myErr := returnError() // want `error return must be received by "err", not "myErr"`
 	_ = myErr
 }
 
-// 报错：多返回值中用 fetchErr 接收 error
+// Fail: receive error from multi-return with fetchErr
 func badMultiReturnCustomName() {
 	_, fetchErr := returnValueAndError() // want `error return must be received by "err", not "fetchErr"`
 	_ = fetchErr
 }
 
-// 报错：三返回值中用 loadErr 接收 error
+// Fail: receive error from triple-return with loadErr
 func badThreeReturnCustomName() {
 	_, _, loadErr := returnThreeWithError() // want `error return must be received by "err", not "loadErr"`
 	_ = loadErr
 }
 
-// 通过：赋值语句（=）用 err 接收
+// Pass: assignment (=) receives error with err
 func goodAssignExisting() {
 	var err error
 
@@ -88,7 +88,7 @@ func goodAssignExisting() {
 	_ = err
 }
 
-// 报错：赋值语句（=）用其他名接收
+// Fail: assignment (=) receives error with non-err name
 func badAssignExisting() {
 	var e error
 
@@ -96,7 +96,7 @@ func badAssignExisting() {
 	_ = e
 }
 
-// 通过：多返回值赋值语句用 err 接收
+// Pass: multi-return assignment receives error with err
 func goodAssignMultiReturn() {
 	var n int
 	var err error
@@ -106,7 +106,7 @@ func goodAssignMultiReturn() {
 	_ = err
 }
 
-// 报错：多返回值赋值语句用其他名接收
+// Fail: multi-return assignment receives error with non-err name
 func badAssignMultiReturn() {
 	var n int
 	var fetchErr error

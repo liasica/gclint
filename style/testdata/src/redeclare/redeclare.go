@@ -175,8 +175,8 @@ func withTransaction(fn func() error) error {
 	return fn()
 }
 
-// closureErrInSameShortVarDecl 复现 bug:
-// 外层 err := f(func() { err := ... }) 闭包内的 err 不应触发 redeclare
+// closureErrInSameShortVarDecl reproduces a bug:
+// err inside closure of outer err := f(func() { err := ... }) should not trigger redeclare
 func closureErrInSameShortVarDecl() {
 	err := withTransaction(func() error {
 		val, err := readFirstValue()
@@ -191,7 +191,7 @@ func closureErrInSameShortVarDecl() {
 	}
 }
 
-// closureErrInSameShortVarDeclMultiReturn 多返回值版本
+// closureErrInSameShortVarDeclMultiReturn multi-return version
 func closureErrInSameShortVarDeclMultiReturn() {
 	result, err := readFirstValue()
 	if err != nil {
@@ -210,7 +210,7 @@ func closureErrInSameShortVarDeclMultiReturn() {
 	_ = result
 }
 
-// closureWithInnerRedeclare 闭包内部自身的 redeclare 仍应报错
+// closureWithInnerRedeclare redeclare within the closure itself should still be reported
 func closureWithInnerRedeclare() {
 	err := withTransaction(func() error {
 		val, err := readFirstValue()

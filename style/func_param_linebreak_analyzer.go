@@ -6,7 +6,7 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-// defaultMaxInlineParams 参数个数小于此值时禁止换行
+// defaultMaxInlineParams forbids line breaks when parameter count is below this value
 const defaultMaxInlineParams = 5
 
 func newFuncParamLinebreakAnalyzer(maxInlineParams int) *analysis.Analyzer {
@@ -63,7 +63,7 @@ func checkFuncParamLinebreak(pass *analysis.Pass, funcType *ast.FuncType, maxInl
 	}
 }
 
-// countFuncParams 统计函数参数列表中的参数个数
+// countFuncParams counts the number of parameters in a function parameter list
 func countFuncParams(fieldList *ast.FieldList) int {
 	if fieldList == nil {
 		return 0
@@ -73,7 +73,7 @@ func countFuncParams(fieldList *ast.FieldList) int {
 
 	for _, field := range fieldList.List {
 		if len(field.Names) == 0 {
-			// 匿名参数（例如接口方法中的 string, error）
+			// Anonymous parameter (e.g. string, error in interface method signatures)
 			count++
 		} else {
 			count += len(field.Names)
